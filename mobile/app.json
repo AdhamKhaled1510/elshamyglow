@@ -1,0 +1,26 @@
+{
+  "expo": {
+    "name": "متجر مستحضرات التجميل",
+    "slug": "cosmetics-store",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#FF6B9D"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.cosmetics.store"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#FF6B9D"
+      },
+      "package": "com.cosmetics.store"
+    },
+    "plugins": [
+      "expo-font"
+    ]
+  }
+}
