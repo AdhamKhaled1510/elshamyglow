@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const { initDb, dbRun, dbGet } = require('./db.js');
+const { initDb, dbRun, dbGet, dbAll } = require('./db.js');
 const productsRouter = require('./routes/products.js');
 const authRouter = require('./routes/auth.js');
 const ordersRouter = require('./routes/orders.js');
@@ -9,26 +9,10 @@ const ordersRouter = require('./routes/orders.js');
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use('/api/products', productsRouter);
-app.use('/api/auth', authRouter);
-app.use('/api/orders', ordersRouter);
-
-app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
-app.get('/api/debug', (req, res) => {
-  try {
-    const { dbAll } = require('./db.js');
-    const cats = dbAll('SELECT * FROM categories');
-    res.json({ cats, ready, initPromise: !!initPromise });
-  } catch(e) {
-    res.json({ error: e.message, stack: e.stack });
-  }
-});
 
 let ready = false;
 let initPromise = null;
-
 app.use((req, res, next) => {
-  if (req.path === '/api/health') return next();
   if (ready) return next();
   if (!initPromise) {
     initPromise = initDb().then(() => {
@@ -56,6 +40,20 @@ app.use((req, res, next) => {
     }).catch(e => console.error('Init error:', e));
   }
   initPromise.then(() => next()).catch(() => next());
+});
+
+app.use('/api/products', productsRouter);
+app.use('/api/auth', authRouter);
+app.use('/api/orders', ordersRouter);
+
+app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
+app.get('/api/debug', (req, res) => {
+  try {
+    const cats = dbAll('SELECT * FROM categories');
+    res.json({ cats, ready });
+  } catch(e) {
+    res.json({ error: e.message });
+  }
 });
 
 if (require.main === module) {
