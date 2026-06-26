@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://adhamkhaled1510.github.io/glowrx-store/sitemap.xml
