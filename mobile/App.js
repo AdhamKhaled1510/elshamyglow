@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, View, I18nManager } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NavigationContainer } from '@react-navigation/native';
@@ -68,7 +68,7 @@ export default function App() {
         <NavigationContainer>
           <Stack.Navigator
             initialRouteName={initialRoute}
-            screenOptions={{ headerShown: false }}
+            screenOptions={{ headerShown: false, direction: 'rtl' }}
           >
             <Stack.Screen name="Auth" component={AuthScreen} />
             <Stack.Screen name="Main" component={MainTabs} />

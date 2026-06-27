@@ -34,5 +34,6 @@ export default {
   quantity: 'الكمية',
   emptyCart: 'السلة فارغة',
   startShopping: 'ابدأ التسوق',
+  desc: 'الوصف',
   welcome: 'مرحباً بك في متجر التجميل',
 };

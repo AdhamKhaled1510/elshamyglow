@@ -34,5 +34,6 @@ export default {
   quantity: 'Quantity',
   emptyCart: 'Cart is empty',
   startShopping: 'Start Shopping',
+  desc: 'Description',
   welcome: 'Welcome to Cosmetics Store',
 };
