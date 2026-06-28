@@ -89,6 +89,8 @@ const productsData = [
   ['ميست ماريو باديسكو','Mario Badescu Facial Spray','رذاذ ترطيب للوجه بالورد','Hydrating facial spray with rosewater',45,40,7,0,'["https://images.unsplash.com/photo-1556229162-5c63ed7c4efb?w=400","https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400"]'],
 ];
 
+let ready = false;
+
 app.use(async (req, res, next) => {
   if (!ready) {
     await initDb();
@@ -121,7 +123,12 @@ app.use('/api/auth', authRouter);
 app.use('/api/orders', ordersRouter);
 app.use('/api/admin', adminRouter);
 
-app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
+app.get('/api/health', async (req, res) => {
+  try {
+    const r = await require('./db.js').dbAll('SELECT 1 as ok');
+    res.json({ status: 'ok', db: r });
+  } catch(e) { res.status(500).json({ error: e.message, stack: e.stack?.split('\n')[0] }); }
+});
 
 // 404 handler
 app.use((req, res) => {
