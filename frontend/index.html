@@ -1638,11 +1638,10 @@ async function fetchData() {
     displayedCount = PER_PAGE;
     renderProducts(products.slice(0, displayedCount));
     if (products.length > PER_PAGE) document.getElementById('loadMoreWrap').style.display = 'block';
+    const catImgs = {1:'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=400&h=400&fit=crop',2:'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=400&h=400&fit=crop',3:'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&h=400&fit=crop',4:'https://images.unsplash.com/photo-1570194065650-d99fb4b38b11?w=400&h=400&fit=crop',5:'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?w=400&h=400&fit=crop'};
     products.forEach(p => {
-      if (!p.images || p.images === '[]') {
-        const catImgs = {1:'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=400&h=400&fit=crop',2:'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=400&h=400&fit=crop',3:'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&h=400&fit=crop',4:'https://images.unsplash.com/photo-1570194065650-d99fb4b38b11?w=400&h=400&fit=crop',5:'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?w=400&h=400&fit=crop'};
-        p.images = JSON.stringify([catImgs[p.category_id] || 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&h=400&fit=crop']);
-      }
+      if (!p.images || p.images === '[]' || p.images === 'null')
+        p.images = JSON.stringify([catImgs[p.category_id] || catImgs[1]]);
     });
   } catch (e) {
     console.error('API failed, using fallback data');
@@ -1781,12 +1780,14 @@ function scrollToProducts() { document.getElementById('productsSection').scrollI
 function scrollToFeatured() { document.getElementById('featuredSection').scrollIntoView({behavior:'smooth'}); }
 
 function addToCart(id) {
-  const p=products.find(x=>x.id===id); if(!p) return;
-  const e=cart.find(x=>x.id===id); if(e) e.qty+=1; else cart.push({...p,qty:1});
-  updateCartUI(); showToast(currentLang==='ar'?'تمت الإضافة إلى السلة ✓':'Added to cart ✓','success');
-  // Badge pop animation
+  const p=products.find(x=>x.id===id);
+  if (!p) { showToast(currentLang==='ar'?'المنتج غير متاح':'Product unavailable','error'); return; }
+  const e=cart.find(x=>x.id===id);
+  if(e) e.qty+=1; else cart.push({id:p.id,name_ar:p.name_ar,name_en:p.name_en,price:p.price,images:p.images,qty:1});
+  updateCartUI();
+  showToast(currentLang==='ar'?'تمت الإضافة إلى السلة ✓':'Added to cart ✓','success');
   const badge = document.getElementById('cartBadge');
-  badge.style.transform='scale(1.4)'; setTimeout(()=>badge.style.transform='scale(1)',300);
+  if (badge) { badge.style.transform='scale(1.4)'; setTimeout(()=>badge.style.transform='scale(1)',300); }
 }
 function removeFromCart(id) { cart=cart.filter(x=>x.id!==id); updateCartUI(); }
 function updateQty(id,d) { const i=cart.find(x=>x.id===id); if(!i) return; i.qty+=d; if(i.qty<=0) {removeFromCart(id);return;} updateCartUI(); }
@@ -1794,14 +1795,22 @@ function getCartTotal() { return cart.reduce((s,i)=>s+i.price*i.qty,0); }
 function getCartCount() { return cart.reduce((s,i)=>s+i.qty,0); }
 
 function updateCartUI() {
-  document.getElementById('cartBadge').textContent=getCartCount();
+  const badge=document.getElementById('cartBadge');
+  if (badge) badge.textContent=getCartCount();
   const c=document.getElementById('cartItems'), empty=document.getElementById('cartEmpty'), footer=document.getElementById('cartFooter');
-  if(!cart.length){c.innerHTML='';c.appendChild(empty);empty.style.display='';footer.style.display='none';return;}
-  empty.style.display='none'; footer.style.display=''; document.getElementById('cartTotal').textContent=`${getCartTotal()} EGP`;
+  if (!c || !empty || !footer) return;
+  if (!cart.length) {
+    c.innerHTML='<div class="cart-empty" id="cartEmpty"><i class="fa-regular fa-bag-shopping"></i><p id="cartEmptyMsg">' + (currentLang==='ar'?'حقيبتك فارغة':'Your bag is empty') + '</p></div>';
+    footer.style.display='none'; return;
+  }
+  empty.style.display='none'; footer.style.display='';
+  const totalEl=document.getElementById('cartTotal');
+  if (totalEl) totalEl.textContent=getCartTotal()+' EGP';
   c.innerHTML=cart.map(i=>{
-    const im=safeParse(i.images), img=im&&im[0]?im[0]:'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&h=400&fit=crop';
+    let img='https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&h=400&fit=crop';
+    try { const im=JSON.parse(i.images); if(im&&im[0]) img=im[0]; } catch {}
     return `<div class="cart-item">
-      <img class="cart-item-img" src="${img}" alt="${i.name_en}" loading="lazy">
+      <img class="cart-item-img" src="${img}" alt="${i.name_en}" loading="lazy" onerror="this.style.background='#25181f'">
       <div class="cart-item-info">
         <div class="cart-item-name">${currentLang==='ar'?i.name_ar:i.name_en}</div>
         <div class="cart-item-name-ar">${currentLang==='ar'?i.name_en:i.name_ar}</div>
