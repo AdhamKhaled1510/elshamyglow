@@ -126,6 +126,7 @@ router.get('/coupons', adminAuth, (req, res) => {
 });
 
 router.post('/coupons', adminAuth, (req, res) => {
+  try {
   const { code, discount_percent, max_uses, min_order, expires_at } = req.body;
   if (!code || !discount_percent) return res.status(400).json({ error: 'Code and discount percent required' });
   const existing = dbGet('SELECT id FROM coupons WHERE code = ?', [code]);
@@ -133,6 +134,7 @@ router.post('/coupons', adminAuth, (req, res) => {
   const result = dbRun('INSERT INTO coupons (code, discount_percent, max_uses, min_order, expires_at) VALUES (?,?,?,?,?)',
     [code.toUpperCase(), discount_percent, max_uses || 0, min_order || 0, expires_at || null]);
   res.json({ id: result.lastInsertRowid, message: 'Coupon created' });
+  } catch(e) { console.error('Coupon create error:', e); res.status(500).json({ error: e.message }); }
 });
 
 router.put('/coupons/:id', adminAuth, (req, res) => {
