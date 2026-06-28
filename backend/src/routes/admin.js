@@ -231,4 +231,28 @@ router.get('/low-stock', adminAuth, async (req, res) => {
   res.json({ products, threshold });
 });
 
+// --- Categories ---
+router.post('/categories', adminAuth, async (req, res) => {
+  const { name_ar, name_en, image } = req.body;
+  if (!name_ar || !name_en) return res.status(400).json({ error: 'Name required' });
+  const result = await dbRun('INSERT INTO categories (name_ar, name_en, image) VALUES (?,?,?)', [name_ar, name_en, image || null]);
+  res.json({ id: result.lastInsertRowid });
+});
+
+router.put('/categories/:id', adminAuth, async (req, res) => {
+  const { name_ar, name_en, image } = req.body;
+  const existing = await dbGet('SELECT id FROM categories WHERE id = ?', [req.params.id]);
+  if (!existing) return res.status(404).json({ error: 'Category not found' });
+  await dbRun('UPDATE categories SET name_ar = ?, name_en = ?, image = ? WHERE id = ?', [name_ar, name_en, image || null, req.params.id]);
+  res.json({ message: 'Category updated' });
+});
+
+router.delete('/categories/:id', adminAuth, async (req, res) => {
+  const existing = await dbGet('SELECT id FROM categories WHERE id = ?', [req.params.id]);
+  if (!existing) return res.status(404).json({ error: 'Category not found' });
+  await dbRun('UPDATE products SET category_id = NULL WHERE category_id = ?', [req.params.id]);
+  await dbRun('DELETE FROM categories WHERE id = ?', [req.params.id]);
+  res.json({ message: 'Category deleted' });
+});
+
 module.exports = router;
