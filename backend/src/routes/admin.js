@@ -209,15 +209,24 @@ router.get('/low-stock', adminAuth, async (req, res) => {
   res.json({ products, threshold });
 });
 
+function csvField(v) {
+  if (v == null) return '';
+  const s = String(v);
+  if (s.includes(',') || s.includes('"') || s.includes('\n') || s.includes('\r')) {
+    return '"' + s.replace(/"/g, '""') + '"';
+  }
+  return s;
+}
+
 // --- Export Orders CSV ---
 router.get('/orders/export', adminAuth, async (req, res) => {
   const orders = await dbAll("SELECT o.*, u.name as user_name, u.email as user_email, u.phone as user_phone FROM orders o LEFT JOIN users u ON o.user_id = u.id ORDER BY o.created_at DESC");
   const rows = orders.map(o => {
     const items = JSON.parse(o.items || '[]');
     const itemNames = items.map(i => (i.name_ar || i.name) + ' x' + i.quantity).join('; ');
-    return `${o.id},${o.user_name || 'Guest'},${o.user_email || ''},${o.phone || o.user_phone || ''},${o.shipping_address || ''},${o.total},${o.status},${o.payment_method},${o.payment_status},"${itemNames}",${o.created_at}`;
+    return [o.id, o.user_name || 'Guest', o.user_email || '', o.phone || o.user_phone || '', o.shipping_address || '', o.total, o.status, o.payment_method, o.payment_status, itemNames, o.created_at].map(csvField).join(',');
   });
-  const header = 'ID,Customer,Email,Phone,Address,Total,Status,Payment Method,Payment Status,Items,Date';
+  const header = ['ID','Customer','Email','Phone','Address','Total','Status','Payment Method','Payment Status','Items','Date'].join(',');
   res.setHeader('Content-Type', 'text/csv; charset=utf-8');
   res.setHeader('Content-Disposition', 'attachment; filename=orders-export.csv');
   res.send('\uFEFF' + header + '\n' + rows.join('\n'));

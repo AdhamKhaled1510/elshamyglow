@@ -512,6 +512,13 @@ if (dark) document.documentElement.classList.add('dark');
 
 function t(ar, en) { return lang === 'ar' ? ar : en; }
 
+function esc(s) {
+  if (s == null) return '';
+  return String(s).replace(/[&<>"'\/]/g, function(c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;', '/': '&#x2F;' }[c] || c;
+  });
+}
+
 function showToast(msg, type = 'success') {
   const c = document.getElementById('toastContainer');
   const t = document.createElement('div');
@@ -549,6 +556,9 @@ function toggleLang() {
   localStorage.setItem('adminLang', lang);
   document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
   document.getElementById('langToggle').textContent = lang === 'ar' ? 'English' : 'العربية';
+  // Update page title
+  const titles = { dashboard: '📊 ' + t('الإحصائيات','Dashboard'), orders: '📦 ' + t('الطلبات','Orders'), products: '🛍️ ' + t('المنتجات','Products'), users: '👥 ' + t('العملاء','Customers'), coupons: '🎟️ ' + t('الكوبونات','Coupons'), reports: '📈 ' + t('التقارير','Reports') };
+  document.getElementById('pageTitle').textContent = titles[currentSection] || currentSection;
   renderCurrentSection();
 }
 
