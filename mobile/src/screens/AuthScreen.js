@@ -3,7 +3,6 @@ import {
   View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, SafeAreaView, ActivityIndicator,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Linking from 'expo-linking';
 import { useLanguage } from '../context/LanguageContext';
 import { login, register } from '../api';
 import { t } from '../i18n';
@@ -40,30 +39,7 @@ export default function AuthScreen({ navigation }) {
     } finally { setLoading(false); }
   };
 
-  const handleGoogleLogin = async () => {
-    try {
-      let WebBrowser;
-      try { WebBrowser = require('expo-web-browser'); } catch {}
-      if (!WebBrowser) { Alert.alert('', lang === 'ar' ? 'Google login غير متاح' : 'Google login not available'); return; }
-      const redirectUri = Linking.createURL('auth/callback');
-      const result = await WebBrowser.openAuthSessionAsync(
-        `${API_URL}/auth/google?redirect_uri=${encodeURIComponent(redirectUri)}`,
-        redirectUri
-      );
-      if (result.type === 'success' && result.url) {
-        const parsed = Linking.parse(result.url);
-        const token = parsed.queryParams?.token;
-        if (token) {
-          await AsyncStorage.setItem('token', token);
-          navigation.reset({ index: 0, routes: [{ name: 'Main' }] });
-        } else {
-          Alert.alert('', lang === 'ar' ? 'فشل تسجيل الدخول عبر Google' : 'Google login failed');
-        }
-      }
-    } catch (err) {
-      Alert.alert('', err.message);
-    }
-  };
+  // Google login removed - will be added in a future update
 
   return (
     <SafeAreaView style={styles.container}>
@@ -139,12 +115,11 @@ export default function AuthScreen({ navigation }) {
         <View style={styles.dividerLine} />
       </View>
 
-      <TouchableOpacity style={styles.googleBtn} onPress={handleGoogleLogin}>
-        <Text style={styles.googleIcon}>G</Text>
-        <Text style={styles.googleBtnText}>
-          {lang === 'ar' ? 'متابعة عبر Google' : 'Continue with Google'}
+      <View style={{ alignItems: 'center', marginTop: 8 }}>
+        <Text style={{ color: '#999', fontSize: 13 }}>
+          {lang === 'ar' ? 'تسجيل الدخول عبر Google قريباً' : 'Google login coming soon'}
         </Text>
-      </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 }
