@@ -20,6 +20,7 @@ async function initDb() {
   try { db.run('ALTER TABLE users ADD COLUMN verification_code TEXT'); } catch(e) {}
   try { db.run('ALTER TABLE users ADD COLUMN verification_expires_at TEXT'); } catch(e) {}
   try { db.run('ALTER TABLE coupons ADD COLUMN expires_at TEXT'); } catch(e) {}
+  try { db.run('ALTER TABLE coupons ADD COLUMN min_order REAL DEFAULT 0'); } catch(e) {}
   ready = true;
 }
 
